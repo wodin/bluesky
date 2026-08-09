@@ -1,7 +1,7 @@
 import {beforeEach, describe, expect, it, jest} from '@jest/globals'
 
 import {type Device, device} from '#/storage'
-import {RepeatedLinkStore} from './store'
+import {RepeatedLinkStore, sharedRepeatedLinkStore} from './store'
 
 /*
  * The mock's map is static so it outlives an instance, which is what lets a
@@ -132,6 +132,15 @@ describe('RepeatedLinkStore', () => {
     expect(
       later.getKept('did:plc:alice https://example.com/story'),
     ).toBeUndefined()
+  })
+
+  /*
+   * Identity is the whole contract here. Two live instances each persist their
+   * own map, so whichever writes last drops what the other remembered, and the
+   * feed starts showing repeats again.
+   */
+  it('hands out one shared store rather than a fresh one per caller', () => {
+    expect(sharedRepeatedLinkStore()).toBe(sharedRepeatedLinkStore())
   })
 
   it('still knows the kept post after a restart', () => {

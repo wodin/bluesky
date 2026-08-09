@@ -49,6 +49,22 @@ function load(): PersistedEntry[] {
 }
 
 /**
+ * The single live store, or none yet.
+ */
+let shared: RepeatedLinkStore | undefined
+
+/**
+ * The store the app shares. Two live instances clobber each other, since each
+ * remember rewrites the whole persisted list from its own map, so there is
+ * exactly one. Built on first use rather than at import so that loading this
+ * module does not read storage.
+ */
+export function sharedRepeatedLinkStore(): RepeatedLinkStore {
+  shared ??= new RepeatedLinkStore()
+  return shared
+}
+
+/**
  * Remembers which link post was kept for a given dedup key, so a repeat stays
  * suppressed across app restarts.
  */
