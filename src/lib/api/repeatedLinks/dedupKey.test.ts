@@ -1,14 +1,13 @@
-import {type AppBskyFeedDefs} from '@atproto/api'
-
+import {type app} from '#/lexicons'
 import {dedupKey, extractEmbedUrl, normalizeEmbedUrl} from './dedupKey'
 
 function makePost({
   embed,
   did = 'did:plc:author',
 }: {
-  embed?: AppBskyFeedDefs.PostView['embed']
-  did?: string
-}): AppBskyFeedDefs.PostView {
+  embed?: app.bsky.feed.defs.PostView['embed']
+  did?: `did:${string}:${string}`
+}): app.bsky.feed.defs.PostView {
   return {
     uri: `at://${did}/app.bsky.feed.post/abc`,
     cid: 'bafyabc',
@@ -26,7 +25,7 @@ function makePost({
   }
 }
 
-function externalEmbed(uri: string) {
+function externalEmbed(uri: `${string}:${string}`) {
   return {
     $type: 'app.bsky.embed.external#view' as const,
     external: {
@@ -198,7 +197,7 @@ describe('dedupKey', () => {
 
   it('is undefined when the embed URL cannot be normalized', () => {
     expect(
-      dedupKey(makePost({embed: externalEmbed('not a url')})),
+      dedupKey(makePost({embed: externalEmbed('http://')})),
     ).toBeUndefined()
   })
 })

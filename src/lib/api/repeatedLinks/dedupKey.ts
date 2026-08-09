@@ -1,23 +1,20 @@
-import {
-  AppBskyEmbedExternal,
-  AppBskyEmbedRecordWithMedia,
-  type AppBskyFeedDefs,
-} from '@atproto/api'
+import {app} from '#/lexicons'
+import * as bsky from '#/types/bsky'
 
 /**
  * The embed URL of a link post, or undefined when the post carries no external
  * link.
  */
 export function extractEmbedUrl(
-  post: AppBskyFeedDefs.PostView,
+  post: app.bsky.feed.defs.PostView,
 ): string | undefined {
   const embed = post.embed
-  if (AppBskyEmbedExternal.isView(embed)) {
+  if (bsky.isType(app.bsky.embed.external.view, embed)) {
     return embed.external.uri
   }
   if (
-    AppBskyEmbedRecordWithMedia.isView(embed) &&
-    AppBskyEmbedExternal.isView(embed.media)
+    bsky.isType(app.bsky.embed.recordWithMedia.view, embed) &&
+    bsky.isType(app.bsky.embed.external.view, embed.media)
   ) {
     return embed.media.external.uri
   }
@@ -83,7 +80,9 @@ export function normalizeEmbedUrl(url: string): string | undefined {
  * URL. Undefined when the post is not a link post, meaning it is never
  * suppressed.
  */
-export function dedupKey(post: AppBskyFeedDefs.PostView): string | undefined {
+export function dedupKey(
+  post: app.bsky.feed.defs.PostView,
+): string | undefined {
   const url = extractEmbedUrl(post)
   if (!url) return undefined
 
