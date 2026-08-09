@@ -10,6 +10,8 @@ import * as bsky from '#/types/bsky'
 import {isPostInLanguage} from '../../locale/helpers'
 import {FALLBACK_MARKER_POST} from './feed/home'
 import {type ReasonFeedSource} from './feed/types'
+import {dedupKey} from './repeatedLinks/dedupKey'
+import {type RepeatedLinkStore} from './repeatedLinks/store'
 
 type FeedViewPost = AppBskyFeedDefs.FeedViewPost
 
@@ -394,6 +396,39 @@ export class FeedTuner {
       }
     }
     return slices
+  }
+
+  static removeRepeatedLinks(store: RepeatedLinkStore) {
+    return (
+      _tuner: FeedTuner,
+      slices: FeedViewPostsSlice[],
+      dryRun: boolean,
+    ): FeedViewPostsSlice[] => {
+      return slices.filter(slice => {
+        const post = slice._feedPost.post
+        const key = dedupKey(post)
+        if (!key) return true
+
+        const kept = store.getKept(key)
+        if (kept === undefined) {
+          /*
+           * A dry run asks what the feed would look like; nothing has been
+           * surfaced to the user, so recording it would suppress these posts
+           * for real when they are next rendered.
+           */
+          if (!dryRun) {
+            store.remember(key, post.uri)
+          }
+          return true
+        }
+        /*
+         * A reload re-delivers the kept post itself. Suppressing it because the
+         * store has seen the key would make the story vanish rather than dedupe
+         * it, so only a genuinely different post is suppressed.
+         */
+        return kept === post.uri
+      })
+    }
   }
 
   static followedRepliesOnly({userDid}: {userDid: string}) {

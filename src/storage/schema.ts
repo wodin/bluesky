@@ -74,6 +74,21 @@ export type Device = {
   inviteFriendsThemeKey?: InviteThemeKey
 
   /**
+   * Link posts already surfaced in a feed, so that a repeat of one stays
+   * suppressed across restarts. Oldest first. Held as a single list rather than
+   * a key per entry because a dedup key contains the separator `Storage` joins
+   * scopes with.
+   */
+  repeatedLinkPosts?: {
+    /** Dedup key: author DID plus normalized embed URL. */
+    key: string
+    /** AT URI of the post kept for that key. */
+    uri: string
+    /** When the post was kept, for age-based eviction. */
+    seenAt: number
+  }[]
+
+  /**
    * Policy update overlays. New IDs are required for each new announcement.
    */
   policyUpdateDebugOverride?: boolean
